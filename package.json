@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "micro-dev -p 8080",
-    "start": "yarn ;env NODE_ENV=production micro -p 8080",
+    "start": "yarn ;env NODE_ENV=production PORT=8080  micro ${PORT:-8080}",
     "precommit": "lint-staged",
     "lint": "eslint src",
     "lint:fix": "npm run lint -- --fix",
@@ -21,8 +21,11 @@
   "dependencies": {
     "axios": "^0.16.2",
     "micro": "^8.0.2",
+    "micro-compress": "^1.0.0",
+    "micro-cors": "^0.0.4",
     "microrouter": "^2.2.2",
-    "mongodb": "^2.2.30"
+    "mongodb": "^2.2.30",
+    "ramda": "^0.24.1"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
