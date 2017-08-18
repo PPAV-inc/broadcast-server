@@ -6,13 +6,10 @@ describe('server', () => {
     expect(server).toBeDefined();
   });
 
-  it('should return 200 when POST /broadcast', async () => {
-    const reqbody = {
-      hello: 'world',
-    };
-    const response = await request(server).post('/broadcast').send(reqbody);
+  it('should return 200 when GET /', async () => {
+    const response = await request(server).get('/');
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual(reqbody);
+    expect(response.text).toEqual('I am good');
   });
 });
