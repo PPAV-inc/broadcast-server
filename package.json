@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "axios": "^0.16.2",
+    "dotenv": "^4.0.0",
     "micro": "^8.0.2",
     "micro-compress": "^1.0.0",
     "micro-cors": "^0.0.4",

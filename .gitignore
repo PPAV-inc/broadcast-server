@@ -13,5 +13,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-#coverage
+# coverage
 coverage
+
+# env
+.env
