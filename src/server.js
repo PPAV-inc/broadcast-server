@@ -5,6 +5,7 @@ const cors = require('micro-cors');
 
 const healthyCheck = require('./routes/healthyCheck');
 const broadcast = require('./routes/broadcast');
+const redirect = require('./routes/redirect');
 
 const enhance = R.compose(
   cors({
@@ -17,5 +18,6 @@ const enhance = R.compose(
 
 module.exports = router(
   post('/broadcast', enhance(broadcast)),
+  get('/redirect', enhance(redirect)),
   get('/', enhance(healthyCheck))
 );
