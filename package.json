@@ -5,8 +5,8 @@
   "description": "PPAV Broadcast Server",
   "main": "index.js",
   "scripts": {
-    "dev": "NODE_ENV=development micro-dev -p 8080",
-    "start": "yarn ;env NODE_ENV=production PORT=8080  micro ${PORT:-8080}",
+    "dev": "NODE_ENV=development micro-dev -p 5000",
+    "start": "yarn ;env NODE_ENV=production PORT=5000  micro ${PORT:-5000}",
     "precommit": "lint-staged",
     "lint": "eslint src",
     "lint:fix": "npm run lint -- --fix",
@@ -24,6 +24,7 @@
     "micro": "^8.0.2",
     "micro-compress": "^1.0.0",
     "micro-cors": "^0.0.4",
+    "micro-redirect": "^1.0.0",
     "microrouter": "^2.2.2",
     "moment-timezone": "^0.5.13",
     "mongodb": "^2.2.31",
