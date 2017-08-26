@@ -18,6 +18,6 @@ const enhance = R.compose(
 
 module.exports = router(
   post('/broadcast', enhance(broadcast)),
-  get('/redirect', enhance(redirect)),
+  get('/redirect/', enhance(redirect)),
   get('/', enhance(healthyCheck))
 );
