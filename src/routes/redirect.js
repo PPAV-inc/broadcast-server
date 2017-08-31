@@ -10,15 +10,18 @@ const redirectRoute = async (req, res) => {
 
   const db = await database();
 
+  const regexURL = `url|${encodeURI(url)}`;
   try {
-    const result = await db
-      .collection('videos')
-      .updateOne(
-        { _id: ObjectId(_id), 'videos.url': url },
-        { $inc: { total_view_count: 1, 'videos.$.view_count': 1 } }
-      );
+    const result = await db.collection('videos').updateOne(
+      {
+        _id: ObjectId(_id),
+        'videos.url': { $regex: regexURL, $options: 'i' },
+      },
+      { $inc: { total_view_count: 1, 'videos.$.view_count': 1 } }
+    );
 
     if (result.matchedCount > 0) {
+      console.log(`redirect url: ${url}`);
       redirect(res, 302, encodeURI(url));
     }
   } catch (err) {
