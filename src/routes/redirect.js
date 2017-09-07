@@ -10,7 +10,7 @@ const redirectRoute = async (req, res) => {
 
   const db = await database();
 
-  const regexURL = `url|${encodeURI(url)}`;
+  const regexURL = `${url}|${encodeURI(url)}`;
   try {
     const result = await db.collection('videos').updateOne(
       {
