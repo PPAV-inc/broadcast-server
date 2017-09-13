@@ -14,6 +14,7 @@ const broadcast = async (req, res) => {
       process.env.NODE_ENV === 'development'
         ? process.env.DEV_BOT_TOKEN
         : process.env.PROD_BOT_TOKEN;
+
     try {
       /* eslint-disable */
       for (let i = 0; i < subscribeUsers.length; i += 1) {
