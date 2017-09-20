@@ -19,6 +19,7 @@
     "node": ">=8"
   },
   "dependencies": {
+    "date-fns": "^1.28.5",
     "dateformat": "^2.0.0",
     "dotenv": "^4.0.0",
     "messaging-api-telegram": "^0.3.4",
