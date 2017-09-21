@@ -19,8 +19,10 @@
     "node": ">=8"
   },
   "dependencies": {
-    "axios": "^0.16.2",
+    "date-fns": "^1.28.5",
+    "dateformat": "^2.0.0",
     "dotenv": "^4.0.0",
+    "messaging-api-telegram": "^0.3.4",
     "micro": "^8.0.2",
     "micro-compress": "^1.0.0",
     "micro-cors": "^0.0.4",
@@ -28,7 +30,9 @@
     "microrouter": "^2.2.2",
     "moment-timezone": "^0.5.13",
     "mongodb": "^2.2.31",
-    "ramda": "^0.24.1"
+    "p-each-series": "^1.0.0",
+    "ramda": "^0.24.1",
+    "sleep-promise": "^2.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
@@ -49,7 +53,7 @@
     "jest": "^20.0.4",
     "lint-staged": "^4.0.1",
     "micro-dev": "^1.2.1",
-    "prettier": "^1.5.2",
+    "prettier": "^1.7.0",
     "supertest": "^3.0.0"
   },
   "lint-staged": {
