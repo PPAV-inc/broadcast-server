@@ -1,7 +1,7 @@
 const english = {
   newVideos: {
     greetingText: firstNamem =>
-      `Dear ${firstNamem}\nHear comes PPAV daily new videos for you 🛬`,
+      `Dear ${firstNamem}\nHere comes PPAV daily new videos for you 🛬`,
   },
   videos: {
     code: 'Code',
