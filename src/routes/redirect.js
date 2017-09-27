@@ -1,8 +1,12 @@
 const { send } = require('micro');
 const redirect = require('micro-redirect');
 const { ObjectId } = require('mongodb');
+const ua = require('universal-analytics');
+const { parse } = require('tldjs');
 
 const database = require('../models/database');
+
+const visitor = ua(process.env.GA_TOKEN);
 
 const redirectRoute = async (req, res) => {
   const url = decodeURI(req.query.url);
@@ -22,6 +26,7 @@ const redirectRoute = async (req, res) => {
 
     if (result.matchedCount > 0) {
       console.log(`redirect url: ${url}`);
+      visitor.event('redirect statistics', parse(url).domain, url).send();
       redirect(res, 302, encodeURI(url));
     }
   } catch (err) {
