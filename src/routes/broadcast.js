@@ -2,7 +2,6 @@ const { json, send } = require('micro');
 const moment = require('moment-timezone');
 const { TelegramClient } = require('messaging-api-telegram');
 const pEachSeries = require('p-each-series');
-const sleep = require('sleep-promise');
 
 const { getSubscribeUsers } = require('../models/users');
 const { getNewVideos } = require('../models/videos');
@@ -25,25 +24,25 @@ const broadcast = async (req, res) => {
     const newVideos = await getNewVideos();
 
     try {
-      await pEachSeries(subscribeUsers, async user => {
-        const { userId, firstName, languageCode } = user;
+      if (newVideos.length > 0) {
+        await pEachSeries(subscribeUsers, async user => {
+          const { userId, firstName, languageCode } = user;
 
-        await client.sendMessage(
-          userId,
-          `${locale(languageCode).newVideos.greetingText(firstName)}`
-        );
+          await client.sendMessage(
+            userId,
+            `${locale(languageCode).newVideos.greetingText(firstName)}`
+          );
 
-        await pEachSeries(newVideos, async video => {
-          const options = newVideoKeyboard(languageCode, video);
-          await client.sendPhoto(userId, video.img_url, options);
+          await pEachSeries(newVideos, async video => {
+            const options = newVideoKeyboard(languageCode, video);
+            await client.sendPhoto(userId, video.img_url, options);
+          });
         });
-
-        await sleep(300);
-      });
+      }
 
       console.log(`broadcast to ${subscribeUsers.length} users`);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   }
 
