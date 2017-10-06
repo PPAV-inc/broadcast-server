@@ -18,6 +18,7 @@ const client = TelegramClient.connect(botToken);
 const broadcast = async (req, res) => {
   const body = await json(req);
 
+  console.log(`get broadcast request at ${new Date()}`);
   if (process.env.BROADCAST_SECRET === body.broadcastSecret) {
     const hour = moment.tz('Asia/Taipei').format('H');
     const subscribeUsers = await getSubscribeUsers(+hour);
