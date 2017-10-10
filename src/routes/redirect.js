@@ -5,17 +5,28 @@ const ua = require('universal-analytics');
 const { parse } = require('tldjs');
 
 const database = require('../models/database');
+const aesDecrypt = require('./utils/aesDecrypt');
 
 const visitor = ua(process.env.GA_TOKEN);
 
 const redirectRoute = async (req, res) => {
-  const url = decodeURI(req.query.url);
+  const url = decodeURIComponent(req.query.url);
   const _id = req.query._id;
+  const EncryptoUserId = decodeURIComponent(req.query.user);
 
   const db = await database();
 
   const regexURL = `${url}|${encodeURI(url)}`;
   try {
+    const userId = aesDecrypt(EncryptoUserId);
+
+    await db.collection('logs').insertOne({
+      userId,
+      videoId: _id,
+      url,
+      createdAt: new Date(),
+    });
+
     const result = await db.collection('videos').updateOne(
       {
         _id: ObjectId(_id),
@@ -30,6 +41,7 @@ const redirectRoute = async (req, res) => {
       redirect(res, 302, encodeURI(url));
     }
   } catch (err) {
+    console.error('something wrong!');
     console.error(err);
   }
 
