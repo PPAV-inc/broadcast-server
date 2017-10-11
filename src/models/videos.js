@@ -13,6 +13,10 @@ const getNewVideos = async () => {
         $gte: new Date(getTime(subDays(now, 1))),
         $lte: new Date(now),
       },
+      $or: [
+        { $where: 'this.videos.length !== 1' },
+        { 'videos.source': { $ne: 'iavtv' } },
+      ],
     })
     .sort({ score: -1 })
     .limit(3)
