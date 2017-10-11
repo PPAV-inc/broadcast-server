@@ -3,6 +3,7 @@ const redirect = require('micro-redirect');
 const { ObjectId } = require('mongodb');
 const ua = require('universal-analytics');
 const { parse } = require('tldjs');
+const escapeRegExp = require('lodash/escapeRegExp');
 
 const database = require('../models/database');
 const aesDecrypt = require('./utils/aesDecrypt');
@@ -16,7 +17,7 @@ const redirectRoute = async (req, res) => {
 
   const db = await database();
 
-  const regexURL = `${url}|${encodeURI(url)}`;
+  const regexURL = `${escapeRegExp(url)}|${escapeRegExp(encodeURI(url))}`;
   try {
     const userId = aesDecrypt(EncryptoUserId);
 
@@ -39,6 +40,8 @@ const redirectRoute = async (req, res) => {
       console.log(`redirect url: ${url}`);
       visitor.event('redirect statistics', parse(url).domain, url).send();
       redirect(res, 302, encodeURI(url));
+    } else {
+      throw new Error(`result matchCount = 0, url: ${url}`);
     }
   } catch (err) {
     console.error('something wrong!');
