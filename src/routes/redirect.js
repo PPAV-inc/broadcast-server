@@ -13,21 +13,12 @@ const visitor = ua(process.env.GA_TOKEN);
 const redirectRoute = async (req, res) => {
   const url = decodeURIComponent(req.query.url);
   const _id = req.query._id;
-  const EncryptoUserId = decodeURIComponent(req.query.user);
+  const user = req.query.user;
 
   const db = await database();
 
   const regexURL = `${escapeRegExp(url)}|${escapeRegExp(encodeURI(url))}`;
   try {
-    const userId = aesDecrypt(EncryptoUserId);
-
-    await db.collection('logs').insertOne({
-      userId,
-      videoId: _id,
-      url,
-      createdAt: new Date(),
-    });
-
     const result = await db.collection('videos').updateOne(
       {
         _id: ObjectId(_id),
@@ -37,6 +28,18 @@ const redirectRoute = async (req, res) => {
     );
 
     if (result.matchedCount > 0) {
+      if (user) {
+        const EncryptoUserId = decodeURIComponent(user);
+        const userId = aesDecrypt(EncryptoUserId);
+
+        await db.collection('logs').insertOne({
+          userId,
+          videoId: _id,
+          url,
+          createdAt: new Date(),
+        });
+      }
+
       console.log(`redirect url: ${url}`);
       visitor.event('redirect statistics', parse(url).domain, url).send();
       redirect(res, 302, encodeURI(url));
@@ -45,6 +48,9 @@ const redirectRoute = async (req, res) => {
     }
   } catch (err) {
     console.error('something wrong!');
+    console.error(`url: ${url}`);
+    console.error(`_id: ${_id}`);
+    console.error(`user: ${user}`);
     console.error(err);
   }
 
