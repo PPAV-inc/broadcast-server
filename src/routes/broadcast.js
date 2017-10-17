@@ -29,15 +29,20 @@ const broadcast = async (req, res) => {
         await pEachSeries(subscribeUsers, async user => {
           const { userId, firstName, languageCode } = user;
 
-          await client.sendMessage(
-            userId,
-            `${locale(languageCode).newVideos.greetingText(firstName)}`
-          );
+          try {
+            await client.sendMessage(
+              userId,
+              `${locale(languageCode).newVideos.greetingText(firstName)}`
+            );
 
-          await pEachSeries(newVideos, async video => {
-            const options = newVideoKeyboard(languageCode, video);
-            await client.sendPhoto(userId, video.img_url, options);
-          });
+            await pEachSeries(newVideos, async video => {
+              const options = newVideoKeyboard(languageCode, video);
+              await client.sendPhoto(userId, video.img_url, options);
+            });
+          } catch (err) {
+            console.error(`something wrong when send message to ${userId}`);
+            console.error(err.message);
+          }
         });
       }
 
