@@ -2,6 +2,8 @@ const { json, send } = require('micro');
 const moment = require('moment-timezone');
 const { TelegramClient } = require('messaging-api-telegram');
 const pEachSeries = require('p-each-series');
+const pMap = require('p-map');
+const differenceInMinutes = require('date-fns/difference_in_minutes');
 
 const { getSubscribeUsers } = require('../models/users');
 const { getNewVideos } = require('../models/videos');
@@ -17,8 +19,11 @@ const client = TelegramClient.connect(botToken);
 
 const broadcast = async (req, res) => {
   const body = await json(req);
+  send(res, 200, body);
 
-  console.log(`get broadcast request at ${new Date()}`);
+  const start = new Date();
+  console.log(`get broadcast request at ${start}`);
+
   if (process.env.BROADCAST_SECRET === body.broadcastSecret) {
     const hour = moment.tz('Asia/Taipei').format('H');
     const subscribeUsers = await getSubscribeUsers(+hour);
@@ -28,6 +33,7 @@ const broadcast = async (req, res) => {
       if (newVideos.length > 0) {
         await pEachSeries(subscribeUsers, async user => {
           const { userId, firstName, languageCode } = user;
+          console.log(`broadcast to user: ${userId}`);
 
           try {
             await client.sendMessage(
@@ -35,10 +41,14 @@ const broadcast = async (req, res) => {
               `${locale(languageCode).newVideos.greetingText(firstName)}`
             );
 
-            await pEachSeries(newVideos, async video => {
-              const options = newVideoKeyboard(languageCode, video);
-              await client.sendPhoto(userId, video.img_url, options);
-            });
+            await pMap(
+              newVideos,
+              async video => {
+                const options = newVideoKeyboard(languageCode, video);
+                await client.sendPhoto(userId, video.img_url, options);
+              },
+              { concurrency: 5 }
+            );
           } catch (err) {
             console.error(`something wrong when send message to ${userId}`);
             console.error(err.message);
@@ -46,13 +56,15 @@ const broadcast = async (req, res) => {
         });
       }
 
-      console.log(`broadcast to ${subscribeUsers.length} users`);
+      console.log(`total broadcast to ${subscribeUsers.length} users`);
     } catch (err) {
       console.error(err);
     }
   }
 
-  send(res, 200, body);
+  const done = new Date();
+  console.log(`broadcast done at ${done}`);
+  console.log(`take ${differenceInMinutes(done, start)} mins`);
 };
 
 module.exports = broadcast;
