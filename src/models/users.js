@@ -9,4 +9,13 @@ const getSubscribeUsers = async hour => {
   return subscribedUsers;
 };
 
-module.exports.getSubscribeUsers = getSubscribeUsers;
+const getAllUsers = async languageCode => {
+  const db = await getDatabase();
+  const allUsers = await db
+    .collection('users')
+    .find({ languageCode: { $regex: new RegExp(`^${languageCode}`, 'i') } })
+    .toArray();
+  return allUsers;
+};
+
+module.exports = { getSubscribeUsers, getAllUsers };
