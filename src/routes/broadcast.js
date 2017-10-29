@@ -5,7 +5,11 @@ const pEachSeries = require('p-each-series');
 const pMap = require('p-map');
 const differenceInMinutes = require('date-fns/difference_in_minutes');
 
-const { getSubscribeUsers, getAllUsers } = require('../models/users');
+const {
+  getSubscribeUsers,
+  getAllUsers,
+  getUnacceptedUsers,
+} = require('../models/users');
 const { getNewVideos } = require('../models/videos');
 const { newVideoKeyboard } = require('../utils/keyboards');
 const locale = require('../utils/locale/index');
@@ -70,7 +74,10 @@ const broadcast = async (req, res) => {
       console.error(err);
     }
   } else if (body.broadcastSecret === process.env.BROADCAST_ALL_SECRET) {
-    const allUsers = await getAllUsers(body.languageCode);
+    const allUsers = body.accept
+      ? await getAllUsers(body.languageCode)
+      : await getUnacceptedUsers();
+
     try {
       const allUsersLength = allUsers.length;
       console.log(

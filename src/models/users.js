@@ -18,4 +18,13 @@ const getAllUsers = async languageCode => {
   return allUsers;
 };
 
-module.exports = { getSubscribeUsers, getAllUsers };
+const getUnacceptedUsers = async () => {
+  const db = await getDatabase();
+  const allUnacceptedUsers = await db
+    .collection('users')
+    .find({ acceptDisclaimer: false })
+    .toArray();
+  return allUnacceptedUsers;
+};
+
+module.exports = { getSubscribeUsers, getAllUsers, getUnacceptedUsers };

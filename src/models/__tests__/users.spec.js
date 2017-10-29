@@ -1,4 +1,4 @@
-import { getSubscribeUsers, getAllUsers } from '../users';
+import { getSubscribeUsers, getAllUsers, getUnacceptedUsers } from '../users';
 
 jest.mock('../database');
 
@@ -58,6 +58,36 @@ describe('getAllUsers', () => {
       })),
     });
     const users = await getAllUsers('zh');
+
+    expect(users).toBeInstanceOf(Array);
+    expect(users.length).toBe(1);
+  });
+});
+
+describe('getUnacceptedUsers', () => {
+  it('hould be defined', () => {
+    expect(getUnacceptedUsers).toBeDefined();
+  });
+
+  it('should return all users', async () => {
+    getDatabase.mockReturnValue({
+      collection: jest.fn(() => ({
+        find: jest.fn(() => ({
+          toArray: jest.fn(() => [
+            {
+              userId: 1,
+              firstName: 'first',
+              lastName: 'last',
+              username: 'username',
+              acceptDisclaimer: true,
+              autoDeleteMessages: false,
+              languageCode: 'zh-TW',
+            },
+          ]),
+        })),
+      })),
+    });
+    const users = await getUnacceptedUsers();
 
     expect(users).toBeInstanceOf(Array);
     expect(users.length).toBe(1);
