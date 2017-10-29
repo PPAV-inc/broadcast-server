@@ -91,7 +91,12 @@ const broadcast = async (req, res) => {
             `broadcast to user: ${userId} (${index + 1}/${allUsersLength})`
           );
 
-          await client.sendMessage(userId, `${body.message}`);
+          try {
+            await client.sendMessage(userId, `${body.message}`);
+          } catch (err) {
+            console.error(`something wrong when send message to ${userId}`);
+            console.error(err.message);
+          }
         },
         { concurrency: 5 }
       );
