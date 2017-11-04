@@ -18,7 +18,7 @@ const getNewVideos = async () => {
         { 'videos.source': { $ne: 'iavtv' } },
       ],
     })
-    .sort({ score: -1 })
+    .sort({ publishedAt: -1, total_view_count: -1 })
     .limit(3)
     .toArray();
   return newVideos;
