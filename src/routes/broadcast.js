@@ -10,7 +10,7 @@ const {
   getAllUsers,
   getUnacceptedUsers,
 } = require('../models/users');
-const { getNewVideos } = require('../models/videos');
+const { getNewVideos, getRecommendedVideos } = require('../models/videos');
 const { newVideoKeyboard } = require('../utils/keyboards');
 const locale = require('../utils/locale/index');
 
@@ -35,6 +35,7 @@ const broadcast = async (req, res) => {
   console.log(`get broadcast request at ${start}`);
 
   if (body.broadcastSecret === process.env.BROADCAST_SUBSCRIBE_SECRET) {
+    // broadcast to subscribed users
     const hour = moment.tz('Asia/Taipei').format('H');
     const subscribeUsers = await getSubscribeUsers(+hour);
     const newVideos = await getNewVideos();
@@ -54,8 +55,20 @@ const broadcast = async (req, res) => {
               `${locale(languageCode).newVideos.greetingText(firstName)}`
             );
 
+            let recVideos;
+            try {
+              recVideos = await getRecommendedVideos(userId);
+              console.log(`recVideos length: ${recVideos.length}`);
+            } catch (err) {
+              console.error('error happens when get recVideos');
+              console.error(err);
+            }
+
+            const sendVideos =
+              recVideos && recVideos.length > 0 ? recVideos : newVideos;
+
             await pMap(
-              newVideos,
+              sendVideos,
               async video => {
                 const options = newVideoKeyboard(languageCode, video);
                 await client.sendPhoto(userId, video.img_url, options);
@@ -74,6 +87,7 @@ const broadcast = async (req, res) => {
       console.error(err);
     }
   } else if (body.broadcastSecret === process.env.BROADCAST_ALL_SECRET) {
+    // broadcast to all users
     const allUsers = body.accept
       ? await getAllUsers(body.languageCode)
       : await getUnacceptedUsers();
