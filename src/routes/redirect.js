@@ -34,7 +34,7 @@ const redirectRoute = async (req, res) => {
 
         await db.collection('logs').insertOne({
           userId,
-          videoId: _id,
+          videoId: ObjectId(_id),
           url,
           createdAt: new Date(),
         });
