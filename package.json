@@ -19,6 +19,7 @@
     "node": ">=8"
   },
   "dependencies": {
+    "babel-register": "^6.26.0",
     "date-fns": "^1.29.0",
     "dateformat": "^2.0.0",
     "dotenv": "^4.0.0",
