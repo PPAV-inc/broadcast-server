@@ -4,6 +4,7 @@ const { TelegramClient } = require('messaging-api-telegram');
 const pEachSeries = require('p-each-series');
 const pMap = require('p-map');
 const differenceInMinutes = require('date-fns/difference_in_minutes');
+const cloneDeep = require('lodash/cloneDeep');
 
 const {
   getSubscribeUsers,
@@ -92,7 +93,9 @@ PPAV 獨家取得奧視影片，每日一部，千萬不要錯過！
               console.error(err);
             }
 
-            const sendVideos = recVideos.concat(newVideos).slice(0, 5);
+            const sendVideos = recVideos
+              .concat(cloneDeep(newVideos))
+              .slice(0, 5);
 
             const encryptUserId = aesEncrypt(`${userId}`);
             sendVideos.forEach(eachResult => {
