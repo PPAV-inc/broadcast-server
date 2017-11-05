@@ -26,13 +26,13 @@ const getNewVideos = async () => {
 const getRecommendedVideos = async userId => {
   const db = await getDatabase();
   const user = await db.collection('rec_users').findOne({ userId });
-  if (!user) return;
+  if (!user) return [];
 
   const models = user.models
-    .filter(model => model.count > 1) // FIXME: filter count number
+    .filter(model => model.count > 0) // FIXME: filter count number
     .map(each => each.model);
 
-  if (models.length === 0) return;
+  if (models.length === 0) return [];
 
   const oneDaysBefore = subDays(new Date(), 1);
   const recVideos = await db

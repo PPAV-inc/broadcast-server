@@ -29,15 +29,20 @@ const redirectRoute = async (req, res) => {
 
     if (result.matchedCount > 0) {
       if (user) {
-        const EncryptoUserId = decodeURIComponent(user);
-        const userId = aesDecrypt(EncryptoUserId);
+        try {
+          const EncryptoUserId = decodeURIComponent(user);
+          const userId = aesDecrypt(EncryptoUserId);
 
-        await db.collection('logs').insertOne({
-          userId,
-          videoId: ObjectId(_id),
-          url,
-          createdAt: new Date(),
-        });
+          await db.collection('logs').insertOne({
+            userId,
+            videoId: ObjectId(_id),
+            url,
+            createdAt: new Date(),
+          });
+        } catch (err) {
+          console.error(`error happens at encrypto user: ${user}`);
+          console.error(err);
+        }
       }
 
       console.log(`redirect url: ${url}`);

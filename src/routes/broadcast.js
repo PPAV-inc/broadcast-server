@@ -56,7 +56,7 @@ const broadcast = async (req, res) => {
               `${locale(languageCode).newVideos.greetingText(firstName)}`
             );
 
-            let recVideos;
+            let recVideos = [];
             try {
               recVideos = await getRecommendedVideos(userId);
               console.log(`recVideos length: ${recVideos.length}`);
@@ -65,8 +65,7 @@ const broadcast = async (req, res) => {
               console.error(err);
             }
 
-            const sendVideos =
-              recVideos && recVideos.length > 0 ? recVideos : newVideos;
+            const sendVideos = recVideos.concat(newVideos).slice(0, 5);
 
             const encryptUserId = aesEncrypt(`${userId}`);
             sendVideos.forEach(eachResult => {
