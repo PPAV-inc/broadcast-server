@@ -13,6 +13,7 @@ const {
 const { getNewVideos, getRecommendedVideos } = require('../models/videos');
 const { newVideoKeyboard } = require('../utils/keyboards');
 const locale = require('../utils/locale/index');
+const aesEncrypt = require('./utils/aesEncrypt').default;
 
 const botToken =
   process.env.NODE_ENV === 'development'
@@ -66,6 +67,19 @@ const broadcast = async (req, res) => {
 
             const sendVideos =
               recVideos && recVideos.length > 0 ? recVideos : newVideos;
+
+            const encryptUserId = aesEncrypt(`${userId}`);
+            sendVideos.forEach(eachResult => {
+              // eslint-disable-next-line no-param-reassign
+              eachResult.videos = eachResult.videos.map(video => ({
+                ...video,
+                url: `https://www.ppav.xyz/redirect/?url=${encodeURIComponent(
+                  video.url
+                )}&_id=${eachResult._id}&user=${encodeURIComponent(
+                  encryptUserId
+                )}`,
+              }));
+            });
 
             await pMap(
               sendVideos,
