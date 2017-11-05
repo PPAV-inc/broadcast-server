@@ -48,6 +48,12 @@ const redirectRoute = async (req, res) => {
       console.log(`redirect url: ${url}`);
       visitor.event('redirect statistics', parse(url).domain, url).send();
       redirect(res, 302, encodeURI(url));
+    } else if (url.includes('ourshdtv')) {
+      await db.collection('ourshdtv_logs').insertOne({
+        createdAt: new Date(),
+      });
+
+      redirect(res, 302, encodeURI(url));
     } else {
       throw new Error(`result matchCount = 0, url: ${url}`);
     }
@@ -57,9 +63,8 @@ const redirectRoute = async (req, res) => {
     console.error(`_id: ${_id}`);
     console.error(`user: ${user}`);
     console.error(err);
+    send(res, 404);
   }
-
-  send(res, 404);
 };
 
 module.exports = redirectRoute;
