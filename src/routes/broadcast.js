@@ -1,7 +1,6 @@
 const { json, send } = require('micro');
 const moment = require('moment-timezone');
 const { TelegramClient } = require('messaging-api-telegram');
-const pEachSeries = require('p-each-series');
 const pMap = require('p-map');
 const differenceInMinutes = require('date-fns/difference_in_minutes');
 const cloneDeep = require('lodash/cloneDeep');
@@ -47,82 +46,86 @@ const broadcast = async (req, res) => {
         console.log(
           `start broadcast to Subscribed Users. Totally ${subscribeUsers.length} users`
         );
-        await pEachSeries(subscribeUsers, async user => {
-          const { userId, firstName, languageCode } = user;
-          console.log(`broadcast to user: ${userId}`);
-
-          try {
-            await client.sendMessage(
-              userId,
-              `${locale(languageCode).newVideos.greetingText(firstName)}`
-            );
+        await pMap(
+          subscribeUsers,
+          async user => {
+            const { userId, firstName, languageCode } = user;
+            console.log(`broadcast to user: ${userId}`);
 
             try {
-              await client.sendPhoto(userId, 'https://imgur.com/ygsx5S3', {
-                reply_markup: {
-                  inline_keyboard: [
-                    [
-                      {
-                        text: '🆓 PPAV X 奧視免費專區',
-                        url: `https://www.ppav.xyz/redirect/?url=${encodeURIComponent(
-                          'http://ourshdtv.com/ad/click?code=1551ef9cbae61a7d089c49979b4fac97'
-                        )}`,
-                      },
+              await client.sendMessage(
+                userId,
+                `${locale(languageCode).newVideos.greetingText(firstName)}`
+              );
+
+              try {
+                await client.sendPhoto(userId, 'https://imgur.com/ygsx5S3', {
+                  reply_markup: {
+                    inline_keyboard: [
+                      [
+                        {
+                          text: '🆓 PPAV X 奧視免費專區',
+                          url: `https://www.ppav.xyz/redirect/?url=${encodeURIComponent(
+                            'http://ourshdtv.com/ad/click?code=1551ef9cbae61a7d089c49979b4fac97'
+                          )}`,
+                        },
+                      ],
                     ],
-                  ],
-                },
-                parse_mode: 'Markdown',
-                disable_web_page_preview: false,
-                caption: `
+                  },
+                  parse_mode: 'Markdown',
+                  disable_web_page_preview: false,
+                  caption: `
 PPAV x 奧視 今日免費看
 
 PPAV 獨家取得奧視影片，每日一部，千萬不要錯過！
 立刻點擊觀看👇`,
+                });
+              } catch (err) {
+                console.error('error happens when send ourshdtv video');
+                console.error(err);
+              }
+
+              let recVideos = [];
+              try {
+                recVideos = await getRecommendedVideos(userId);
+                console.log(`recVideos length: ${recVideos.length}`);
+              } catch (err) {
+                console.error('error happens when get recVideos');
+                console.error(err);
+              }
+
+              const sendVideos = recVideos
+                .concat(cloneDeep(newVideos))
+                .slice(0, 5);
+
+              const encryptUserId = aesEncrypt(`${userId}`);
+              sendVideos.forEach(eachResult => {
+                // eslint-disable-next-line no-param-reassign
+                eachResult.videos = eachResult.videos.map(video => ({
+                  ...video,
+                  url: `https://www.ppav.xyz/redirect/?url=${encodeURIComponent(
+                    video.url
+                  )}&_id=${eachResult._id}&user=${encodeURIComponent(
+                    encryptUserId
+                  )}`,
+                }));
               });
+
+              await pMap(
+                sendVideos,
+                async video => {
+                  const options = newVideoKeyboard(languageCode, video);
+                  await client.sendPhoto(userId, video.img_url, options);
+                },
+                { concurrency: 5 }
+              );
             } catch (err) {
-              console.error('error happens when send ourshdtv video');
-              console.error(err);
+              console.error(`something wrong when send message to ${userId}`);
+              console.error(err.message);
             }
-
-            let recVideos = [];
-            try {
-              recVideos = await getRecommendedVideos(userId);
-              console.log(`recVideos length: ${recVideos.length}`);
-            } catch (err) {
-              console.error('error happens when get recVideos');
-              console.error(err);
-            }
-
-            const sendVideos = recVideos
-              .concat(cloneDeep(newVideos))
-              .slice(0, 5);
-
-            const encryptUserId = aesEncrypt(`${userId}`);
-            sendVideos.forEach(eachResult => {
-              // eslint-disable-next-line no-param-reassign
-              eachResult.videos = eachResult.videos.map(video => ({
-                ...video,
-                url: `https://www.ppav.xyz/redirect/?url=${encodeURIComponent(
-                  video.url
-                )}&_id=${eachResult._id}&user=${encodeURIComponent(
-                  encryptUserId
-                )}`,
-              }));
-            });
-
-            await pMap(
-              sendVideos,
-              async video => {
-                const options = newVideoKeyboard(languageCode, video);
-                await client.sendPhoto(userId, video.img_url, options);
-              },
-              { concurrency: 5 }
-            );
-          } catch (err) {
-            console.error(`something wrong when send message to ${userId}`);
-            console.error(err.message);
-          }
-        });
+          },
+          { concurrency: 5 }
+        );
       }
 
       console.log(`total broadcast to ${subscribeUsers.length} users`);

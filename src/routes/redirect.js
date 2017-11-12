@@ -33,6 +33,8 @@ const redirectRoute = async (req, res) => {
           const EncryptoUserId = decodeURIComponent(user);
           const userId = aesDecrypt(EncryptoUserId);
 
+          console.log(`redirect userId: ${userId}`);
+
           await db.collection('logs').insertOne({
             userId,
             videoId: ObjectId(_id),
@@ -43,6 +45,8 @@ const redirectRoute = async (req, res) => {
           console.error(`error happens at encrypto user: ${user}`);
           console.error(err);
         }
+      } else {
+        console.log(`not found user from url: ${req.url}`);
       }
 
       console.log(`redirect url: ${url}`);
