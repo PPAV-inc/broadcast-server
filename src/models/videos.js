@@ -1,21 +1,11 @@
-const subDays = require('date-fns/sub_days');
 const getDatabase = require('./database');
 
 const getNewVideos = async () => {
   const db = await getDatabase();
-  const oneDaysBefore = subDays(new Date(), 1);
 
   const newVideos = await db
-    .collection('videos')
-    .find({
-      updated_at: {
-        $gte: oneDaysBefore,
-      },
-      $or: [
-        { $where: 'this.videos.length !== 1' },
-        { 'videos.source': { $ne: 'iavtv' } },
-      ],
-    })
+    .collection('rec_videos')
+    .find()
     .sort({ publishedAt: -1, total_view_count: -1 })
     .limit(5)
     .toArray();
@@ -32,25 +22,12 @@ const getRecommendedVideos = async userId => {
     .filter(model => model.count > 0) // FIXME: filter count number
     .map(each => each.model);
 
+  console.log(`models length: ${models.length}`);
   if (models.length === 0) return [];
 
-  const oneDaysBefore = subDays(new Date(), 1);
   const recVideos = await db
-    .collection('videos')
+    .collection('rec_videos')
     .aggregate([
-      {
-        $match: {
-          updated_at: {
-            $gte: oneDaysBefore,
-          },
-          $or: [
-            {
-              'videos.1': { $exists: true },
-            },
-            { 'videos.source': { $ne: 'iavtv' } },
-          ],
-        },
-      },
       {
         $addFields: {
           bothModels: { $setIntersection: ['$models', models] },
@@ -61,7 +38,7 @@ const getRecommendedVideos = async userId => {
           'bothModels.0': { $exists: true },
         },
       },
-      { $sort: { total_view_count: -1 } },
+      { $sort: { publishedAt: -1, total_view_count: -1 } },
       { $limit: 5 },
     ])
     .toArray();
