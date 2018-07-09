@@ -92,11 +92,13 @@ PPAV 獨家取得奧視影片，每日一部，千萬不要錯過！
               let recVideos = [];
               try {
                 recVideos = await getRecommendedVideos(userId);
-                console.log(`recVideos length: ${recVideos.length}`);
               } catch (err) {
                 console.error('error happens when get recVideos');
                 console.error(err);
               }
+              console.log(
+                `broadcast to user: ${userId}, recVideos len: ${recVideos.length}`
+              );
 
               const sendVideos = recVideos
                 .concat(cloneDeep(newVideos))
