@@ -21,11 +21,34 @@ const botToken =
     : process.env.PROD_BOT_TOKEN;
 
 const client = TelegramClient.connect(botToken);
+const URL = 'https://www.ppavgo.com';
 
 const calculateBroadcastTime = start => {
   const done = new Date();
   console.log(`broadcast done at ${done}`);
   console.log(`take ${differenceInMinutes(done, start)} mins`);
+};
+
+const ourshdtvKeyboard = {
+  reply_markup: {
+    inline_keyboard: [
+      [
+        {
+          text: '🆓 PPAV X 奧視免費專區',
+          url: `${URL}/redirect/?url=${encodeURIComponent(
+            'http://ourshdtv.com/ad/click?code=1551ef9cbae61a7d089c49979b4fac97'
+          )}`,
+        },
+      ],
+    ],
+  },
+  parse_mode: 'Markdown',
+  disable_web_page_preview: false,
+  caption: `
+PPAV x 奧視 今日免費看
+
+PPAV 獨家取得奧視影片，每日一部，千萬不要錯過！
+立刻點擊觀看👇`,
 };
 
 const broadcast = async (req, res) => {
@@ -44,13 +67,14 @@ const broadcast = async (req, res) => {
     try {
       if (newVideos.length > 0) {
         console.log(
-          `start broadcast to Subscribed Users. Totally ${subscribeUsers.length} users`
+          `start broadcast to Subscribed Users. Totally ${
+            subscribeUsers.length
+          } users`
         );
         await pMap(
           subscribeUsers,
           async user => {
             const { userId, firstName, languageCode } = user;
-            console.log(`broadcast to user: ${userId}`);
 
             try {
               await client.sendMessage(
@@ -62,27 +86,7 @@ const broadcast = async (req, res) => {
                 await client.sendPhoto(
                   userId,
                   'https://i.imgur.com/ygsx5S3.jpg',
-                  {
-                    reply_markup: {
-                      inline_keyboard: [
-                        [
-                          {
-                            text: '🆓 PPAV X 奧視免費專區',
-                            url: `https://www.ppav.xyz/redirect/?url=${encodeURIComponent(
-                              'http://ourshdtv.com/ad/click?code=1551ef9cbae61a7d089c49979b4fac97'
-                            )}`,
-                          },
-                        ],
-                      ],
-                    },
-                    parse_mode: 'Markdown',
-                    disable_web_page_preview: false,
-                    caption: `
-PPAV x 奧視 今日免費看
-
-PPAV 獨家取得奧視影片，每日一部，千萬不要錯過！
-立刻點擊觀看👇`,
-                  }
+                  ourshdtvKeyboard
                 );
               } catch (err) {
                 console.error('error happens when send ourshdtv video');
@@ -97,7 +101,9 @@ PPAV 獨家取得奧視影片，每日一部，千萬不要錯過！
                 console.error(err);
               }
               console.log(
-                `broadcast to user: ${userId}, recVideos len: ${recVideos.length}`
+                `broadcast to user: ${userId}, recVideos len: ${
+                  recVideos.length
+                }`
               );
 
               const sendVideos = recVideos
@@ -109,7 +115,7 @@ PPAV 獨家取得奧視影片，每日一部，千萬不要錯過！
                 // eslint-disable-next-line no-param-reassign
                 eachResult.videos = eachResult.videos.map(video => ({
                   ...video,
-                  url: `https://www.ppav.xyz/redirect/?url=${encodeURIComponent(
+                  url: `${URL}/redirect/?url=${encodeURIComponent(
                     video.url
                   )}&_id=${eachResult._id}&user=${encodeURIComponent(
                     encryptUserId
@@ -147,7 +153,9 @@ PPAV 獨家取得奧視影片，每日一部，千萬不要錯過！
     try {
       const allUsersLength = allUsers.length;
       console.log(
-        `start broadcast to All Users whose language code is "${body.languageCode}" related. Totally ${allUsersLength} users`
+        `start broadcast to All Users whose language code is "${
+          body.languageCode
+        }" related. Totally ${allUsersLength} users`
       );
       await pMap(
         allUsers,
@@ -172,6 +180,7 @@ PPAV 獨家取得奧視影片，每日一部，千萬不要錯過！
   } else {
     console.error('broadcast secret is wrong');
   }
+
   calculateBroadcastTime(start);
 };
 
