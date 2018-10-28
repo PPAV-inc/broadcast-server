@@ -1,6 +1,7 @@
 const traditionalChinese = {
   newVideos: {
-    greetingText: firstNamem => `親愛的 ${firstNamem}\nPPAV 每日新片已為您送達 🛬`,
+    greetingText: firstNamem =>
+      `親愛的 ${firstNamem}\nPPAV 每日新片已為您送達 🛬`,
   },
   videos: {
     code: '番號',

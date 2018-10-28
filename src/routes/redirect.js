@@ -12,8 +12,7 @@ const visitor = ua(process.env.GA_TOKEN);
 
 const redirectRoute = async (req, res) => {
   const url = decodeURIComponent(req.query.url);
-  const _id = req.query._id;
-  const user = req.query.user;
+  const { _id, user } = req.query;
 
   const db = await database();
 
