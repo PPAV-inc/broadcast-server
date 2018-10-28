@@ -11,12 +11,12 @@ const aesDecrypt = require('./utils/aesDecrypt');
 const visitor = ua(process.env.GA_TOKEN);
 
 const redirectRoute = async (req, res) => {
-  const url = decodeURIComponent(req.query.url);
-  const { _id, user } = req.query;
+  const { _id, user, url } = req.query;
+  const _url = decodeURIComponent(url);
+  const regexURL = `${escapeRegExp(_url)}|${escapeRegExp(encodeURI(_url))}`;
 
   const db = await database();
 
-  const regexURL = `${escapeRegExp(url)}|${escapeRegExp(encodeURI(url))}`;
   try {
     const result = await db.collection('videos').updateOne(
       {
@@ -26,14 +26,26 @@ const redirectRoute = async (req, res) => {
       { $inc: { total_view_count: 1, 'videos.$.view_count': 1 } }
     );
 
+    let userId = null;
+    if (user) {
+      const EncryptoUserId = decodeURIComponent(user);
+      userId = aesDecrypt(EncryptoUserId);
+
+      console.log(`redirect userId: ${userId}`);
+
+      await db.collection('users').updateOne(
+        {
+          userId: parseInt(userId, 10),
+        },
+        { $set: { lastActivedAt: new Date() } }
+      );
+    } else {
+      console.log(`not found user from url: ${req.url}`);
+    }
+
     if (result.matchedCount > 0) {
-      if (user) {
+      if (userId) {
         try {
-          const EncryptoUserId = decodeURIComponent(user);
-          const userId = aesDecrypt(EncryptoUserId);
-
-          console.log(`redirect userId: ${userId}`);
-
           await db.collection('logs').insertOne({
             userId,
             videoId: ObjectId(_id),
@@ -44,8 +56,6 @@ const redirectRoute = async (req, res) => {
           console.error(`error happens at encrypto user: ${user}`);
           console.error(err);
         }
-      } else {
-        console.log(`not found user from url: ${req.url}`);
       }
 
       console.log(`redirect url: ${url}`);
