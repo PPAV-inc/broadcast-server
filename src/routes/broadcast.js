@@ -1,6 +1,5 @@
 const { json, send } = require('micro');
 const moment = require('moment-timezone');
-const { TelegramClient } = require('messaging-api-telegram');
 const pMap = require('p-map');
 const differenceInMinutes = require('date-fns/difference_in_minutes');
 const cloneDeep = require('lodash/cloneDeep');
@@ -13,15 +12,12 @@ const {
 const { getNewVideos, getRecommendedVideos } = require('../models/videos');
 const { newVideoKeyboard } = require('../utils/keyboards');
 const locale = require('../utils/locale/index');
-const aesEncrypt = require('./utils/aesEncrypt').default;
+const aesEncrypt = require('./utils/aesEncrypt');
+const client = require('./utils/client');
 
-const botToken =
-  process.env.NODE_ENV === 'development'
-    ? process.env.DEV_BOT_TOKEN
-    : process.env.PROD_BOT_TOKEN;
-
-const client = TelegramClient.connect(botToken);
 const URL = 'https://www.ppavgo.com';
+const oursURL =
+  'http://ourshdtv.com/ad/click?code=1551ef9cbae61a7d089c49979b4fac97';
 
 const calculateBroadcastTime = start => {
   const done = new Date();
@@ -35,9 +31,7 @@ const ourshdtvKeyboard = {
       [
         {
           text: '🆓 PPAV X 奧視免費專區',
-          url: `${URL}/redirect/?url=${encodeURIComponent(
-            'http://ourshdtv.com/ad/click?code=1551ef9cbae61a7d089c49979b4fac97'
-          )}`,
+          url: `${URL}/redirect/?url=${encodeURIComponent(oursURL)}`,
         },
       ],
     ],
@@ -106,22 +100,25 @@ const broadcast = async (req, res) => {
                 }`
               );
 
+              const encryptUserId = aesEncrypt(`${userId}`);
               const sendVideos = recVideos
                 .concat(cloneDeep(newVideos))
-                .slice(0, 5);
+                .slice(0, 5)
+                .map(eachResult => {
+                  const videos = eachResult.videos.map(video => ({
+                    ...video,
+                    url: `${URL}/redirect/?url=${encodeURIComponent(
+                      video.url
+                    )}&_id=${eachResult._id}&user=${encodeURIComponent(
+                      encryptUserId
+                    )}`,
+                  }));
 
-              const encryptUserId = aesEncrypt(`${userId}`);
-              sendVideos.forEach(eachResult => {
-                // eslint-disable-next-line no-param-reassign
-                eachResult.videos = eachResult.videos.map(video => ({
-                  ...video,
-                  url: `${URL}/redirect/?url=${encodeURIComponent(
-                    video.url
-                  )}&_id=${eachResult._id}&user=${encodeURIComponent(
-                    encryptUserId
-                  )}`,
-                }));
-              });
+                  return {
+                    ...eachResult,
+                    videos,
+                  };
+                });
 
               await pMap(
                 sendVideos,
