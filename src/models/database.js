@@ -7,9 +7,9 @@ const getDatabase = async () => {
   }
 
   const mongodbPath =
-    process.env.NODE_ENV === 'development'
-      ? process.env.DEV_MONGODB_PATH
-      : process.env.PROD_MONGODB_PATH;
+    process.env.NODE_ENV === 'production'
+      ? process.env.PROD_MONGODB_PATH
+      : process.env.DEV_MONGODB_PATH;
 
   const db = await MongoClient.connect(mongodbPath);
   _db = db;
