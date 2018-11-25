@@ -1,6 +1,9 @@
 const { MongoClient } = require('mongodb');
+const elasticsearch = require('elasticsearch');
 
 let _db;
+let _elasticsearchdb;
+
 const getDatabase = async () => {
   if (_db) {
     return _db;
@@ -16,4 +19,26 @@ const getDatabase = async () => {
   return _db;
 };
 
-module.exports = getDatabase;
+const getElasticsearchDatabase = () => {
+  if (_elasticsearchdb) {
+    return _elasticsearchdb;
+  }
+
+  const esUrl =
+    process.env.NODE_ENV === 'production'
+      ? process.env.PROD_ES_URL
+      : process.env.DEV_ES_URL;
+
+  const db = new elasticsearch.Client({
+    host: esUrl,
+    log: 'error',
+  });
+  _elasticsearchdb = db;
+
+  return _elasticsearchdb;
+};
+
+module.exports = {
+  getDatabase,
+  getElasticsearchDatabase,
+};

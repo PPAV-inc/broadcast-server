@@ -1,8 +1,8 @@
-import getDatabase from '../database';
+const { MongoClient } = require('mongodb');
+
+const { getDatabase } = require('../database');
 
 jest.mock('mongodb');
-
-const { MongoClient } = require('mongodb');
 
 describe('getDatabase', () => {
   it('should be defined', () => {

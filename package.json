@@ -23,6 +23,7 @@
     "date-fns": "^1.29.0",
     "dateformat": "^3.0.3",
     "dotenv": "^6.1.0",
+    "elasticsearch": "^15.2.0",
     "lodash": "^4.17.4",
     "messaging-api-telegram": "^0.7.11",
     "micro": "^9.3.3",

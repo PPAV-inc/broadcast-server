@@ -4,9 +4,13 @@ const { ObjectId } = require('mongodb');
 const ua = require('universal-analytics');
 const { parse } = require('tldjs');
 const escapeRegExp = require('lodash/escapeRegExp');
+const get = require('lodash/get');
 
-const database = require('../models/database');
+const { getDatabase } = require('../models/database');
+const { getRelatedModels } = require('../models/videos');
+
 const aesDecrypt = require('./utils/aesDecrypt');
+const client = require('./utils/client');
 
 const visitor = ua(process.env.GA_TOKEN);
 
@@ -15,15 +19,16 @@ const redirectRoute = async (req, res) => {
   const _url = decodeURIComponent(url);
   const regexURL = `${escapeRegExp(_url)}|${escapeRegExp(encodeURI(_url))}`;
 
-  const db = await database();
+  const db = await getDatabase();
 
   try {
-    const result = await db.collection('videos').updateOne(
+    const result = await db.collection('videos').findOneAndUpdate(
       {
         _id: ObjectId(_id),
         'videos.url': { $regex: regexURL, $options: 'i' },
       },
-      { $inc: { total_view_count: 1, 'videos.$.view_count': 1 } }
+      { $inc: { total_view_count: 1, 'videos.$.view_count': 1 } },
+      { projection: { models: 1 } }
     );
 
     let userId = null;
@@ -43,7 +48,11 @@ const redirectRoute = async (req, res) => {
       console.log(`not found user from url: ${req.url}`);
     }
 
-    if (result.matchedCount > 0) {
+    if (result.ok === 1) {
+      console.log(`redirect url: ${url}`);
+      visitor.event('redirect statistics', parse(url).domain, url).send();
+      // redirect(res, 302, encodeURI(url));
+
       if (userId) {
         try {
           await db.collection('logs').insertOne({
@@ -56,11 +65,32 @@ const redirectRoute = async (req, res) => {
           console.error(`error happens at encrypto user: ${user}`);
           console.error(err);
         }
-      }
 
-      console.log(`redirect url: ${url}`);
-      visitor.event('redirect statistics', parse(url).domain, url).send();
-      redirect(res, 302, encodeURI(url));
+        const models = get(result, 'value.models', []);
+        const random = Math.random();
+
+        // sometimes send recommended models
+        // recommended related models
+        if (models.length === 1 && random <= 0.4) {
+          const relatedModels = await getRelatedModels(models[0]);
+
+          const text = '我猜這幾個你會很愛的，多來幾槍吧！';
+          const options = {
+            parse_mode: 'Markdown',
+            disable_web_page_preview: false,
+            reply_markup: {
+              inline_keyboard: relatedModels.slice(0, 5).map(model => [
+                {
+                  text: model,
+                  callback_data: `keyword="${model}"&page="0"`,
+                },
+              ]),
+            },
+          };
+
+          await client.sendMessage(userId, text, options);
+        }
+      }
     } else if (url.includes('ourshdtv')) {
       await db.collection('ourshdtv_logs').insertOne({
         createdAt: new Date(),
