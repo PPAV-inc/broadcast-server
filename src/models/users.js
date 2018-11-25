@@ -1,4 +1,4 @@
-const getDatabase = require('./database');
+const { getDatabase } = require('./database');
 
 const getSubscribeUsers = async hour => {
   const db = await getDatabase();

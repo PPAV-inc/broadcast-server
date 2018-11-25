@@ -1,8 +1,11 @@
-import { getSubscribeUsers, getAllUsers, getUnacceptedUsers } from '../users';
+const {
+  getSubscribeUsers,
+  getAllUsers,
+  getUnacceptedUsers,
+} = require('../users');
+const { getDatabase } = require('../database');
 
 jest.mock('../database');
-
-const getDatabase = require('../database');
 
 describe('getSubscribeUsers', () => {
   it('hould be defined', () => {

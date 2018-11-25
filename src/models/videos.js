@@ -1,4 +1,4 @@
-const getDatabase = require('./database');
+const { getDatabase, getElasticsearchDatabase } = require('./database');
 
 const getNewVideos = async () => {
   const db = await getDatabase();
@@ -46,7 +46,42 @@ const getRecommendedVideos = async userId => {
   return recVideos;
 };
 
+const getRelatedModels = async model => {
+  const esClient = getElasticsearchDatabase();
+
+  // http://coyee.com/article/11157-high-quality-recommendation-systems-with-elasticsearch-part-i
+  const result = await esClient.search({
+    index: 'users_history',
+    type: 'users_history',
+    body: {
+      query: {
+        // exactly match
+        match_phrase: {
+          models: model,
+        },
+      },
+      aggs: {
+        recommended_models: {
+          significant_terms: {
+            field: 'models.keyword',
+            min_doc_count: 1,
+          },
+        },
+      },
+    },
+  });
+
+  const {
+    aggregations: {
+      recommended_models: { buckets },
+    },
+  } = result;
+
+  return buckets.map(bucket => bucket.key).filter(name => name !== model);
+};
+
 module.exports = {
   getNewVideos,
   getRecommendedVideos,
+  getRelatedModels,
 };
