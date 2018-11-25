@@ -74,8 +74,21 @@ const redirectRoute = async (req, res) => {
         if (models.length === 1 && random <= 0.4) {
           const relatedModels = await getRelatedModels(models[0]);
 
-          // FIXME
-          await client.sendMessage(userId, relatedModels[0]);
+          const text = '我猜這幾個你會很愛的，多來幾槍吧！';
+          const options = {
+            parse_mode: 'Markdown',
+            disable_web_page_preview: false,
+            reply_markup: {
+              inline_keyboard: relatedModels.slice(0, 5).map(model => [
+                {
+                  text: model,
+                  callback_data: `keyword="${model}"&page="0"`,
+                },
+              ]),
+            },
+          };
+
+          await client.sendMessage(userId, text, options);
         }
       }
     } else if (url.includes('ourshdtv')) {
