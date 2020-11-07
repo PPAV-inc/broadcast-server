@@ -10,8 +10,17 @@ const aesDecrypt = require('./utils/aesDecrypt');
 
 const visitor = ua(process.env.GA_TOKEN);
 
+function hasUnicode(str) {
+  for (let i = 0; i < str.length; i += 1) {
+    if (str.charCodeAt(i) > 127) return true;
+  }
+
+  return false;
+}
+
 const redirectRoute = async (req, res) => {
-  const { _id, user, url } = req.query;
+  const { _id, user } = req.query;
+  let { url } = req.query;
   const _url = decodeURIComponent(url);
   const regexURL = `${escapeRegExp(_url)}|${escapeRegExp(encodeURI(_url))}`;
 
@@ -58,15 +67,13 @@ const redirectRoute = async (req, res) => {
         }
       }
 
+      if (hasUnicode(url)) {
+        url = encodeURI(url);
+      }
+
       console.log(`redirect url: ${url}`);
       visitor.event('redirect statistics', parse(url).domain, url).send();
-      redirect(res, 302, encodeURI(url));
-    } else if (url.includes('ourshdtv')) {
-      await db.collection('ourshdtv_logs').insertOne({
-        createdAt: new Date(),
-      });
-
-      redirect(res, 302, encodeURI(url));
+      redirect(res, 302, url);
     } else {
       throw new Error(`result matchCount = 0, url: ${url}`);
     }
