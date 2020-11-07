@@ -1,7 +1,7 @@
 const { json, send } = require('micro');
 const moment = require('moment-timezone');
 const pMap = require('p-map');
-const differenceInMinutes = require('date-fns/difference_in_minutes');
+const differenceInMinutes = require('date-fns/differenceInMinutes');
 const cloneDeep = require('lodash/cloneDeep');
 
 const {
@@ -16,33 +16,11 @@ const aesEncrypt = require('./utils/aesEncrypt');
 const client = require('./utils/client');
 
 const URL = 'https://www.ppavgo.com';
-const oursURL =
-  'http://ourshdtv.com/ad/click?code=1551ef9cbae61a7d089c49979b4fac97';
 
 const calculateBroadcastTime = (start) => {
   const done = new Date();
   console.log(`broadcast done at ${done}`);
   console.log(`take ${differenceInMinutes(done, start)} mins`);
-};
-
-const ourshdtvKeyboard = {
-  reply_markup: {
-    inline_keyboard: [
-      [
-        {
-          text: '🆓 PPAV X 奧視免費專區',
-          url: `${URL}/redirect/?url=${encodeURIComponent(oursURL)}`,
-        },
-      ],
-    ],
-  },
-  parse_mode: 'Markdown',
-  disable_web_page_preview: false,
-  caption: `
-PPAV x 奧視 今日免費看
-
-PPAV 獨家取得奧視影片，每日一部，千萬不要錯過！
-立刻點擊觀看👇`,
 };
 
 const broadcast = async (req, res) => {
@@ -73,17 +51,6 @@ const broadcast = async (req, res) => {
                 userId,
                 `${locale(languageCode).newVideos.greetingText(firstName)}`
               );
-
-              try {
-                await client.sendPhoto(
-                  userId,
-                  'https://i.imgur.com/ygsx5S3.jpg',
-                  ourshdtvKeyboard
-                );
-              } catch (err) {
-                console.error('error happens when send ourshdtv video');
-                console.error(err);
-              }
 
               let recVideos = [];
               try {
