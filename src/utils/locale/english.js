@@ -1,6 +1,6 @@
 const english = {
   newVideos: {
-    greetingText: firstNamem =>
+    greetingText: (firstNamem) =>
       `Dear ${firstNamem}\nHere comes PPAV daily new videos for you 🛬`,
   },
   videos: {

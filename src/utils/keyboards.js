@@ -1,6 +1,6 @@
 const generateVideoMessageText = require('./generateVideoMessageText');
 
-const inlineKeyboardOptions = keyboard => ({
+const inlineKeyboardOptions = (keyboard) => ({
   reply_markup: {
     inline_keyboard: keyboard,
   },
@@ -14,8 +14,9 @@ const newVideoKeyboard = (languageCode, result) => {
   for (let i = 0; i < result.videos.length; i += 1) {
     keyboard.push([
       {
-        text: `🔞 ${result.videos[i].source}   👁 ${result.videos[i]
-          .view_count || 0}`,
+        text: `🔞 ${result.videos[i].source}   👁 ${
+          result.videos[i].view_count || 0
+        }`,
         url: result.videos[i].url,
       },
     ]);

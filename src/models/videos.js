@@ -13,14 +13,14 @@ const getNewVideos = async () => {
   return newVideos;
 };
 
-const getRecommendedVideos = async userId => {
+const getRecommendedVideos = async (userId) => {
   const db = await getDatabase();
   const user = await db.collection('rec_users').findOne({ userId });
   if (!user) return [];
 
   const models = user.models
-    .filter(model => model.count > 0) // FIXME: filter count number
-    .map(each => each.model);
+    .filter((model) => model.count > 0) // FIXME: filter count number
+    .map((each) => each.model);
 
   console.log(`models length: ${models.length}`);
   if (models.length === 0) return [];
