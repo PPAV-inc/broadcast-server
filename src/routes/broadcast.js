@@ -19,7 +19,7 @@ const URL = 'https://www.ppavgo.com';
 const oursURL =
   'http://ourshdtv.com/ad/click?code=1551ef9cbae61a7d089c49979b4fac97';
 
-const calculateBroadcastTime = start => {
+const calculateBroadcastTime = (start) => {
   const done = new Date();
   console.log(`broadcast done at ${done}`);
   console.log(`take ${differenceInMinutes(done, start)} mins`);
@@ -61,13 +61,11 @@ const broadcast = async (req, res) => {
     try {
       if (newVideos.length > 0) {
         console.log(
-          `start broadcast to Subscribed Users. Totally ${
-            subscribeUsers.length
-          } users`
+          `start broadcast to Subscribed Users. Totally ${subscribeUsers.length} users`
         );
         await pMap(
           subscribeUsers,
-          async user => {
+          async (user) => {
             const { userId, firstName, languageCode } = user;
 
             try {
@@ -95,17 +93,15 @@ const broadcast = async (req, res) => {
                 console.error(err);
               }
               console.log(
-                `broadcast to user: ${userId}, recVideos len: ${
-                  recVideos.length
-                }`
+                `broadcast to user: ${userId}, recVideos len: ${recVideos.length}`
               );
 
               const encryptUserId = aesEncrypt(`${userId}`);
               const sendVideos = recVideos
                 .concat(cloneDeep(newVideos))
                 .slice(0, 5)
-                .map(eachResult => {
-                  const videos = eachResult.videos.map(video => ({
+                .map((eachResult) => {
+                  const videos = eachResult.videos.map((video) => ({
                     ...video,
                     url: `${URL}/redirect/?url=${encodeURIComponent(
                       video.url
@@ -122,7 +118,7 @@ const broadcast = async (req, res) => {
 
               await pMap(
                 sendVideos,
-                async video => {
+                async (video) => {
                   const options = newVideoKeyboard(languageCode, video);
                   await client.sendPhoto(userId, video.img_url, options);
                 },
@@ -150,9 +146,7 @@ const broadcast = async (req, res) => {
     try {
       const allUsersLength = allUsers.length;
       console.log(
-        `start broadcast to All Users whose language code is "${
-          body.languageCode
-        }" related. Totally ${allUsersLength} users`
+        `start broadcast to All Users whose language code is "${body.languageCode}" related. Totally ${allUsersLength} users`
       );
       await pMap(
         allUsers,

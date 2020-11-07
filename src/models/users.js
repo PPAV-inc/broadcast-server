@@ -1,6 +1,6 @@
 const getDatabase = require('./database');
 
-const getSubscribeUsers = async hour => {
+const getSubscribeUsers = async (hour) => {
   const db = await getDatabase();
   const subscribedUsers = await db
     .collection('users')
@@ -9,7 +9,7 @@ const getSubscribeUsers = async hour => {
   return subscribedUsers;
 };
 
-const getAllUsers = async languageCode => {
+const getAllUsers = async (languageCode) => {
   const db = await getDatabase();
   const allUsers = await db
     .collection('users')
